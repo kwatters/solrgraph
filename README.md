@@ -10,12 +10,17 @@ The Graph Query is a lucene level query operator that will allow the traversal o
 GraphQuery contains the following options:
 
 q - the initial start query that identifies the universe of documents to start traversal from.
+
 fromField - the field name that contains the node id
+
 toField - the name of the field that contains the edge id(s).
-tarversalFilter - this is an additional query that can be supplied to limit the scope of graph traversal to just the edges that 
-                  satisify the traversalFilter query
+
+tarversalFilter - this is an additional query that can be supplied to limit the scope of graph traversal to just the edges that satisify the traversalFilter query.
+
 returnStartNodes - boolean to determine if the documents that matched the original "q" should be returned as part of the graph.
+
 onlyLeafNodes - boolean that filters the graph query to only return documents/nodes that have no edges.
+
 maxDepth - integer specifying how deep the breadth first search should go.
 
 Example, given 3 documents 
