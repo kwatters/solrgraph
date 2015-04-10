@@ -29,7 +29,7 @@ public class JoinQueryTest extends SolrTestCaseJ4 {
   @BeforeClass
   public static void beforeTests() throws Exception {
     //initCore("solrconfig-graph.xml","schema-graph.xml");
-    initCore("solr/graph/solrconfig-graph.xml","solr/graph/schema-graph.xml");
+	  initCore("solrconfig.xml","schema.xml", "solr", "graph");
   }
   
   @Test

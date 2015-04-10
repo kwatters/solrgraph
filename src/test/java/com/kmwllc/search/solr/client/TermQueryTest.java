@@ -9,6 +9,8 @@ import org.junit.Test;
 
 
 
+
+
 import com.kmwllc.search.solr.client.AndExpression;
 import com.kmwllc.search.solr.client.OrExpression;
 import com.kmwllc.search.solr.client.PhraseTerm;
@@ -21,7 +23,7 @@ public class TermQueryTest extends SolrTestCaseJ4 {
 	@BeforeClass
 	public static void beforeTests() throws Exception {
 		//initCore("solrconfig-graph.xml","schema-graph.xml");
-		initCore("solr/graph/solrconfig-graph.xml","solr/graph/schema-graph.xml");
+		initCore("solrconfig.xml","schema.xml", "solr", "graph");
 	}
 
 	@Test
@@ -61,18 +63,18 @@ public class TermQueryTest extends SolrTestCaseJ4 {
 
 		qReq = createRequest(kmwXMLQuery);
 		assertQ(qReq,"//*[@numFound='1']");
-		
-		
-		
-		 // lets make a more interesting expression
+
+
+
+		// lets make a more interesting expression
 		//  AND(title:foo, OR(text:a, text:b))
 		AndExpression topAnd = new AndExpression();
 		topAnd.add(new Term("title", "foo"));
 		OrExpression textOr = new OrExpression();
 		textOr.add(new Term("text", "test"));
 		textOr.add(new Term("text", "text"));
-	    topAnd.add(textOr);
-	    kmwXMLQuery = xstream.toXML(topAnd);
+		topAnd.add(textOr);
+		kmwXMLQuery = xstream.toXML(topAnd);
 		qReq = createRequest(kmwXMLQuery);
 		assertQ(qReq,"//*[@numFound='2']");	    
 	}
