@@ -1,12 +1,9 @@
 package com.kmwllc.search.graph;
 
 import java.io.IOException;
-import java.util.TreeSet;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.AutomatonQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -25,12 +22,7 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefHash;
 import org.apache.lucene.util.FixedBitSet;
-import org.apache.lucene.util.OpenBitSet;
-import org.apache.lucene.util.automaton.Automaton;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.handler.component.ResponseBuilder;
-// import org.apache.lucene.util.automaton.AutomatonBuilder;
 import org.apache.solr.search.BitDocSet;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocSet;
@@ -80,7 +72,6 @@ public class GraphQuery extends Query {
    * @param toField - the field containing the edge ids
    */
   public GraphQuery(Query q, String fromField, String toField) {
-	// System.out.println("CONSTRUTOR 1");
     this.q = q;
     this.fromField = fromField;
     this.toField = toField;
@@ -145,6 +136,11 @@ public class GraphQuery extends Query {
     
     public int currentDepth = 0;
     
+    private Filter filter;
+    private ResponseBuilder rb;
+    private DocSet resultSet;
+
+    
     public GraphQueryWeight(SolrIndexSearcher searcher) {
       // Grab the searcher so we can run additional searches.
       this.fromSearcher = searcher;
@@ -179,7 +175,6 @@ public class GraphQuery extends Query {
     @Override
     public float getValueForNormalization() throws IOException {
       // No normalization 1.0
-    	System.out.println("VAL FOR NORM");
       return 1F;
     }
     
@@ -197,7 +192,6 @@ public class GraphQuery extends Query {
      */
     private DocSet getDocSet() throws IOException {
      
-      // System.out.println("Processing Graph Query :" + getQuery().toString());
       DocSet fromSet = null;
       
       FixedBitSet seedResultBits = null;
@@ -222,7 +216,8 @@ public class GraphQuery extends Query {
       leafNodeQuery.add(edgeQuery, Occur.MUST_NOT);
 
       // TODO: cache the leaf node computation at a higher level and pass it in.
-      long start = System.currentTimeMillis();  
+      long start = System.currentTimeMillis(); 
+      // TODO: this is a good one for auto-warming!
       DocSet leafNodes = fromSearcher.getDocSet(leafNodeQuery);      
       long leafDelta = System.currentTimeMillis() - start;
       System.out.println("Leaf node query took " + leafDelta + " ms.");
@@ -232,19 +227,15 @@ public class GraphQuery extends Query {
         long startFSearch = System.currentTimeMillis();
 
         // Create the graph result collector.
-        // TODO: can i / should i create this outside of this loop?
+        // TODO: can i / should i create this outside of this loop? (for now use a local instance for each iteration?)
         GraphTermsCollector graphResultCollector = new GraphTermsCollector(toField,capacity, resultBits, leafNodes);
-        // TODO: shouldn't this get called for me?!
-        // graphResultCollector.setNextReader(fromSearcher.getAtomicReader().getContext());
-        // run the frontier query and collect the result docs and edge ids
+        // traverse the next level!
         fromSearcher.search(frontierQuery, graphResultCollector);
-
         // how long it took to run the search
-        long deltaFSearch = System.currentTimeMillis() - startFSearch;
-        
+        long deltaFSearch = System.currentTimeMillis() - startFSearch;        
         // All edge ids on the frontier.
         BytesRefHash collectorTerms = graphResultCollector.getCollectorTerms();
-
+        // TODO: log message not stdout!
         if (collectorTerms != null) {
           System.out.println("Frontier query took " + deltaFSearch + " ms. FrontierSize: " + collectorTerms.size() + " Depth " + currentDepth);
         } else {
@@ -258,7 +249,7 @@ public class GraphQuery extends Query {
         
         if (seedResultBits == null) {
           // grab a copy of the see bits   
-        	// TODO: fix this type cast!
+          // TODO: fix this type cast!
           seedResultBits = ((BitDocSet)fromSet).getBits().clone();
         }
         
@@ -268,6 +259,7 @@ public class GraphQuery extends Query {
         // printDocIDs(fromSet);
 
         long startCompile = System.currentTimeMillis();
+        // TODO: log message vs system.out
         System.out.println("FRONTIER SIZE BEFORE: " + frontierSize);
         Integer fs = new Integer(frontierSize);
         FrontierQuery fq = buildFrontierQuery(collectorTerms, fs);
@@ -277,11 +269,13 @@ public class GraphQuery extends Query {
         }
         frontierQuery = fq.getFirst();
         frontierSize = fq.getFrontierSize();
+        // TODO: log message not stdout
         System.out.println("FRONTIER SIZE AFTER: " + frontierSize);
         long compileTime = System.currentTimeMillis() - startCompile;
-
+        // TODO: log message not stdout
         System.out.println("Frontier Size : " + frontierSize + " Depth : " + currentDepth + " Compile Time : " + compileTime );
         if (debug) {
+          // TODO : log message not stdout
           if (frontierQuery != null) {
             System.out.println("Frontier Query : " + frontierQuery.toString());
           } else {
@@ -331,6 +325,7 @@ public class GraphQuery extends Query {
     	Integer docId = iter.next();
         Document d = fromSearcher.doc(docId);
         String id = d.getValues("id")[0];
+        // TODO :log message  (this is too verbose?)
         System.out.println("INTERNAL ID : " + docId + " DOC : " + id);
       }
       System.out.println("---------------------------");
@@ -381,6 +376,7 @@ public class GraphQuery extends Query {
         // TODO: see if we should dynamically select this based
         // Based on the frontier size.
         if (useAutn) {
+        	// TODO: re-enable the autn compilation of graph frontier query
 //          // build an automaton based query for the frontier.
 //          Automaton autn = buildAutomaton(collectorTerms);
 //          AutomatonQuery autnQuery = new AutomatonQuery(new Term(fromField), autn);
@@ -396,7 +392,6 @@ public class GraphQuery extends Query {
             // In previous testing, if i didn't resolve it to a utf8 string, it didn't work..
             // edgeQuery.add(new TermQuery(new Term(fromField, ref)), Occur.SHOULD);
             edgeQuery.add(new TermQuery(new Term(fromField, ref.utf8ToString())), Occur.SHOULD);
-
           }
           BooleanClause edgeClause = new BooleanClause(edgeQuery, Occur.MUST);
           frontierQuery.add(edgeClause);
@@ -411,10 +406,6 @@ public class GraphQuery extends Query {
         return fq;
       }
     }
-
-    Filter filter;
-    ResponseBuilder rb;
-    DocSet resultSet;
 
 	@Override
 	public Scorer scorer(AtomicReaderContext context, Bits acceptDocs) throws IOException {
