@@ -72,7 +72,10 @@ public class GraphQueryTest extends SolrTestCaseJ4 {
     String g3Query = "{!graph from=\"node_id\" to=\"edge_id\" returnRoot=\"false\" returnOnlyLeaf=\"false\"}id:doc_8";
     qr = createRequest(g3Query);    
     assertQ(qr,"//*[@numFound='7']");
-
+    
+    String g4Query = "{!graph from=\"node_id\" to=\"edge_id\" returnRoot=\"true\" returnOnlyLeaf=\"false\" traversalFilter=\"text:foo11\"}id:doc_8";
+    qr = createRequest(g4Query);    
+    assertQ(qr,"//*[@numFound='2']");
     
   }
 
