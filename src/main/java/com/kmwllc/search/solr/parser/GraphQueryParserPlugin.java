@@ -12,9 +12,9 @@ import org.apache.solr.search.QParserPlugin;
   * Query parser plugin for solr to wrap the graph query parser.
   * 
   */
-public class KMWQueryParserPlugin extends QParserPlugin {
+public class GraphQueryParserPlugin extends QParserPlugin {
 
-	public static String NAME = "kmw";
+	public static String NAME = "graph";
 
 	private NamedList args = null;
 
@@ -24,7 +24,7 @@ public class KMWQueryParserPlugin extends QParserPlugin {
 
 	@Override
 	public QParser createParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-		return new KMWQueryParser(qstr, localParams, params, req);
+		return new GraphQueryParser(qstr, localParams, params, req);
 	}
 
 }
