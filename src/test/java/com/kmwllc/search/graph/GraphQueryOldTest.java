@@ -19,7 +19,7 @@ import com.kmwllc.search.solr.parser.KMWQueryParser;
  * Licensed to KMW Technology LLC - All rights reserved.
  */
 
-public class GraphQueryTest extends SolrTestCaseJ4 {
+public class GraphQueryOldTest extends SolrTestCaseJ4 {
   
   @BeforeClass
   public static void beforeTests() throws Exception {
@@ -58,13 +58,32 @@ public class GraphQueryTest extends SolrTestCaseJ4 {
     //    
     // assertU(optimize());
     assertU(commit());
+    //    
+    // SolrQueryRequest qr = createRequest("id:doc_1");
+    // assertQ(qr,"//*[@numFound='1']");    
     // Now we have created a simple graph
-        
-    // start traversal from node id to edge id
-    String gQuery = "{!graph fromField=\"node_id\" toField=\"edge_id\"}id:doc_1";
+    Expression startNodes = new AndExpression();
+    startNodes.add(new PhraseTerm("id", "doc_1"));
+    GraphExpression g = new GraphExpression(startNodes,"node_id", "edge_id", -1, null, true, false);
+    
+    String gQuery = KMWQueryParser.initXStream().toXML(g);
     SolrQueryRequest qr = createRequest(gQuery);
     assertQ(qr,"//*[@numFound='7']");
+
     
+    startNodes = new QueryStringExpression("id:doc_8");
+    GraphExpression g2 = new GraphExpression(startNodes,"node_id", "edge_id", -1, null, true, false);
+    String g2Query = KMWQueryParser.initXStream().toXML(g2);
+    qr = createRequest(g2Query);
+    
+    assertQ(qr,"//*[@numFound='8']");
+
+    startNodes = new QueryStringExpression("id:doc_8");
+    Expression travFilter = new QueryStringExpression("text:foo11");
+    GraphExpression g3 = new GraphExpression(startNodes,"node_id", "edge_id", -1, travFilter, true, false);
+    String g3Query = KMWQueryParser.initXStream().toXML(g3);
+    qr = createRequest(g3Query);    
+    assertQ(qr,"//*[@numFound='2']");
   }
 
   private SolrQueryRequest createRequest(String query) {

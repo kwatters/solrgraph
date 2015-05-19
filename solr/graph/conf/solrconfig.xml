@@ -1764,8 +1764,11 @@
     <defaultQuery>*:*</defaultQuery>
   </admin>
   
+  <!--  Graph Query parser for Solr -->
+  <queryParser name="graph" class="com.kmwllc.search.solr.parser.GraphQueryParserPlugin" />
+
   <!--  KMW Custom parser here. -->
-  <queryParser name="graph" class="com.kmwllc.search.solr.parser.KMWQueryParserPlugin" />
+  <queryParser name="kmw" class="com.kmwllc.search.solr.parser.KMWQueryParserPlugin" />
   <!-- frontier request handler. KMW
   <requestHandler name="/frontier" class="com.kmwllc.solr.graph.distributed.FrontierHandler">
   </requestHandler> -->
