@@ -24,20 +24,21 @@ public class GraphQueryParser extends QParser {
 
 	@Override
 	public Query parse() throws SyntaxError {
+
 		SolrParams localParams = getLocalParams();
 		SolrParams params = getParams();
 		SolrParams solrParams = SolrParams.wrapDefaults(localParams, params);
 		QParser baseParser = subQuery(solrParams.get(QueryParsing.V), null);
         Query startNodesQuery = baseParser.getQuery();	
-        
-        String fromField = localParams.get("fromField", "node_id");
-		String toField = localParams.get("toField", "edge_ids");
+        String fromField = localParams.get("from", "node_id");
+		String toField = localParams.get("to", "edge_ids");
 		
 		QParser traversalBaseParser = subQuery(localParams.get("traversalFilter"), null);		
         Query traversalFilter = traversalBaseParser.getQuery();	
         
-		boolean onlyLeafNodes = Boolean.valueOf(localParams.get("onlyLeafNodes", "false"));
-		boolean returnStartNodes = Boolean.valueOf(localParams.get("returnStartNodes", "true"));;
+        // TODO: un-invert this logic
+		boolean onlyLeafNodes = Boolean.valueOf(localParams.get("returnOnlyLeaf", "false"));
+		boolean returnStartNodes = Boolean.valueOf(localParams.get("returnRoot", "true"));
 		int maxDepth = Integer.valueOf(localParams.get("maxDepth", "-1"));
 		
 		GraphQuery gq = new GraphQuery(startNodesQuery, fromField, toField, traversalFilter);

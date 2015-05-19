@@ -61,9 +61,18 @@ public class GraphQueryTest extends SolrTestCaseJ4 {
     // Now we have created a simple graph
         
     // start traversal from node id to edge id
-    String gQuery = "{!graph fromField=\"node_id\" toField=\"edge_id\"}id:doc_1";
+    String gQuery = "{!graph from=\"node_id\" to=\"edge_id\"}id:doc_1";
     SolrQueryRequest qr = createRequest(gQuery);
     assertQ(qr,"//*[@numFound='7']");
+    
+    String g2Query = "{!graph from=\"node_id\" to=\"edge_id\" returnRoot=\"true\" returnOnlyLeaf=\"false\"}id:doc_8";
+    qr = createRequest(g2Query);    
+    assertQ(qr,"//*[@numFound='8']");
+
+    String g3Query = "{!graph from=\"node_id\" to=\"edge_id\" returnRoot=\"false\" returnOnlyLeaf=\"false\"}id:doc_8";
+    qr = createRequest(g3Query);    
+    assertQ(qr,"//*[@numFound='7']");
+
     
   }
 
