@@ -23,14 +23,14 @@ import com.thoughtworks.xstream.XStream;
 
 public class LargeGraphQueryTest extends SolrTestCaseJ4 {
   
-  @BeforeClass
   public static void beforeTests() throws Exception {
     //initCore("solrconfig-graph.xml","schema-graph.xml");
 	  initCore("solrconfig.xml","schema.xml", "solr", "graph");
   }
   
-  @Test
-  public void testGraph() throws Exception {
+
+  // TODO: re-enable with annotation
+  public void loadGraph() throws Exception {
     
     // 1 -> 2 -> 3 -> ( 4 5 )
     // 7 -> 1
@@ -63,7 +63,7 @@ public class LargeGraphQueryTest extends SolrTestCaseJ4 {
     
     Random generator = new Random();
     int maxEdges = 4;
-    int maxNodes = 100000;
+    int maxNodes = 10000;
     for (int i  = 0 ; i < maxNodes ; i++) {
       assertU(adoc(createDoc(generator, maxNodes, maxEdges, i)));
     }
@@ -106,7 +106,7 @@ public class LargeGraphQueryTest extends SolrTestCaseJ4 {
   private SolrQueryRequest createRequest(String query) {
     SolrQueryRequest qr = req(query);
     NamedList<Object> par = qr.getParams().toNamedList();
-    par.add("defType", "graph");
+    par.add("defType", "kmw");
     par.add("debug", "true");
     par.add("rows", "10");
     par.add("fl", "id,node_id,edge_id");
@@ -122,7 +122,7 @@ public class LargeGraphQueryTest extends SolrTestCaseJ4 {
     SolrQueryRequest qr = req(query);
     NamedList<Object> par = qr.getParams().toNamedList();
     par.add("traversalFilter", traversalFilter);
-    par.add("defType", "graph");
+    par.add("defType", "kmw");
     
     par.add("debug", "true");
     par.add("rows", "10");

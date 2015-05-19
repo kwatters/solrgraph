@@ -45,23 +45,27 @@ public class JoinQueryTest extends SolrTestCaseJ4 {
     // Now we have created a simple graph 
     
     // a join query to traverse the query
-    String queryStr = "{!join from=edge_id to=node_id}node_id:3";
-    SolrQueryRequest qr = req(queryStr);
-    
-    SolrParams params = qr.getParams();
-    NamedList<Object> par = params.toNamedList();
-    // par.add("q.type", "*");
-    // defType specifies the parser to use.
-    // par.add("defType", "graph");
-    par.add("debugQuery", "true");
-    par.add("hits", "10");
-
-    SolrParams newp = SolrParams.toSolrParams(par);
-    qr.setParams(newp);
+    String queryStr = "{!graph from=edge_id to=node_id maxDepth=1}node_id:3";
+    SolrQueryRequest qr = createRequest(queryStr);
     
     String responseXML = h.query(qr);
     System.out.println(responseXML);
     
     
+  }
+  
+  private SolrQueryRequest createRequest(String query) {
+	    SolrQueryRequest qr = req(query);
+	    NamedList<Object> par = qr.getParams().toNamedList();
+	    par.add("defType", "graph");
+	    par.add("debug", "true");
+	    par.add("rows", "10");
+	    par.add("fl", "id,node_id,edge_id");
+	    par.remove("qt");
+	    par.add("qt", "/select");
+	    // par.add("")
+	    SolrParams newp = SolrParams.toSolrParams(par);
+	    qr.setParams(newp);
+	    return qr;
   }
 }

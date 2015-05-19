@@ -89,7 +89,7 @@ public class GraphQueryOldTest extends SolrTestCaseJ4 {
   private SolrQueryRequest createRequest(String query) {
     SolrQueryRequest qr = req(query);
     NamedList<Object> par = qr.getParams().toNamedList();
-    par.add("defType", "graph");
+    par.add("defType", "kmw");
     par.add("debug", "true");
     par.add("rows", "10");
     par.add("fl", "id,node_id,edge_id");
