@@ -14,7 +14,7 @@ import com.kmwllc.search.solr.client.Term;
 
 public class QueryUtilsTest extends Assert {
 
-	@Test
+	// @Test
 	public void testToLuceneQuery() throws SyntaxError {
 		// IndexSchema schema = null;
 		// TODO: fix this

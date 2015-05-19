@@ -31,10 +31,10 @@ public class JoinExpressionTest extends Assert {
 		String expected = "JOIN(AND(text:foo,table:t1), INNER(AND(text:bar,table:t2), on=\"node_id=edge_id\"))";
 
 		assertEquals(expected, jq.toString());		
-		IndexSchema schema = null;
-		SolrQueryRequest req = null;
-		String lucJoin = QueryUtils.toLuceneQuery(jq, req).toString();		
-		System.out.println(lucJoin);
+//		IndexSchema schema = null;
+//		SolrQueryRequest req = null;
+//		String lucJoin = QueryUtils.toLuceneQuery(jq, req).toString();		
+//		System.out.println(lucJoin);
 		
 	}
 

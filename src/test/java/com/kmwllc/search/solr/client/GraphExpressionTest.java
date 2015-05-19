@@ -26,9 +26,9 @@ public class GraphExpressionTest extends Assert {
 
 		
 		g.setMaxDepth(2);
-		SolrQueryRequest req = null;
-		String lucGraph = QueryUtils.toLuceneQuery(g, req).toString();		
-		System.out.println(lucGraph);
+		//SolrQueryRequest req = null;
+		//String lucGraph = QueryUtils.toLuceneQuery(g, req).toString();		
+		// System.out.println(lucGraph);
 
 	}
 

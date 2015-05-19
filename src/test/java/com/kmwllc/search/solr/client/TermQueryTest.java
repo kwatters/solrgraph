@@ -83,7 +83,7 @@ public class TermQueryTest extends SolrTestCaseJ4 {
 		SolrQueryRequest qr = req(query);
 		// TODO: really, parameterized as Object?
 		NamedList<Object> par = qr.getParams().toNamedList();
-		par.add("defType", "graph");
+		par.add("defType", "kmw");
 		par.add("debug", "true");
 		par.add("rows", "10");
 		par.add("fl", "id");
