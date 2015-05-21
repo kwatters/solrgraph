@@ -17,9 +17,6 @@ public class EqualsTerm extends Term {
     //EqualsTerm.SOLN = "EQUALS(";
   }
 
-  //TODO:: Override toString with proper output
-  // currently Term just outputs "" + field + SEP + term + EOLN
-
   @Override
   public String toString() {
     // we need to escape the term for the sep
