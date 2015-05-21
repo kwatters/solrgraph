@@ -36,8 +36,13 @@ public class RangeTerm extends Term {
 
 	@Override
 	public String toString() {
-		String val = getField() + Term.SEP + "RANGE(" + (lowerInclusive?">=":">") + lowerTerm + "," + (upperInclusive?"<=":"<") + upperTerm + "," + getBoost() + ")";
-		return val;
+    String lowerIncTerm = lowerInclusive ? ">=" : ">";
+    String upperIncTerm = upperInclusive ? "<=" : "<";
+    String boostTerm = "";
+    if (getBoost() >= 0) {
+      boostTerm = "," + getBoost();
+    }
+		return getField() + SEP + "RANGE(" + lowerIncTerm + lowerTerm + "," + upperIncTerm + upperTerm + boostTerm + ")";
 	}
 
   @Override
