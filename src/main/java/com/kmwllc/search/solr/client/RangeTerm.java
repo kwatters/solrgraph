@@ -2,15 +2,15 @@ package com.kmwllc.search.solr.client;
 
 public class RangeTerm extends Term {
 
-	private String lowerTerm;
-	private String upperTerm;
+  private String lowerTerm;
+  private String upperTerm;
 
   // set default inclusivity
   private boolean lowerInclusive = true;
   private boolean upperInclusive = true;
 
   // TODO: override the getTerm method.
-	// TODO: add more types , such as date/int/float/long/double
+  // TODO: add more types , such as date/int/float/long/double
 
   public RangeTerm(String field, String lowerTerm, String upperTerm, float boost) {
     super(field, null, boost);
@@ -22,7 +22,7 @@ public class RangeTerm extends Term {
     this(field, lowerTerm, upperTerm, boost);
     this.lowerInclusive = lowerInclusive;
     this.upperInclusive = upperInclusive;
-	}
+  }
 
   public RangeTerm(String field, String lowerTerm, String upperTerm) {
     this(field, lowerTerm, upperTerm, -1);
@@ -34,24 +34,24 @@ public class RangeTerm extends Term {
     this.upperInclusive = upperInclusive;
   }
 
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
     String lowerIncTerm = lowerInclusive ? ">=" : ">";
     String upperIncTerm = upperInclusive ? "<=" : "<";
     String boostTerm = "";
     if (getBoost() >= 0) {
       boostTerm = "," + getBoost();
     }
-		return getField() + SEP + "RANGE(" + lowerIncTerm + lowerTerm + "," + upperIncTerm + upperTerm + boostTerm + ")";
-	}
+    return getField() + SEP + "RANGE(" + lowerIncTerm + lowerTerm + "," + upperIncTerm + upperTerm + boostTerm + ")";
+  }
 
   @Override
   public boolean equals(Object obj) {
     if (!super.equals(obj)) {
       return false;
     }
-    
-    RangeTerm other = (RangeTerm)obj;
+
+    RangeTerm other = (RangeTerm) obj;
 
     if (lowerInclusive != other.lowerInclusive) {
       return false;

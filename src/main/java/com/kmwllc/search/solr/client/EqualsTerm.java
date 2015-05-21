@@ -1,7 +1,5 @@
 package com.kmwllc.search.solr.client;
 
-import org.apache.tools.ant.taskdefs.condition.Equals;
-
 /**
  * Created by dmeehl
  * Created on 5/18/15
@@ -22,7 +20,7 @@ public class EqualsTerm extends Term {
     // we need to escape the term for the sep
     String escaped = getTerm().replaceAll(SEP, "\\" + SEP);
 
-    if ( (escaped.contains(" ") || escaped.contains(",")) && !escaped.startsWith("\"") && !escaped.endsWith("\"") ) {
+    if ((escaped.contains(" ") || escaped.contains(",")) && !escaped.startsWith("\"") && !escaped.endsWith("\"")) {
       escaped = escaped.replace("\"", "\\\"");
       escaped = "\"" + escaped + "\"";
     }
@@ -34,7 +32,7 @@ public class EqualsTerm extends Term {
     return "" + getField() + SEP + "EQUALS(" + escaped + boostTerm + ")" + EOLN;
   }
 
-  public static void main(String[] args){
+  public static void main(String[] args) {
     EqualsTerm e = new EqualsTerm("aaa", "bbb", 1);
     System.out.println(e);
 
