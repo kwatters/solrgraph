@@ -70,11 +70,15 @@ public class Term {
 	public String toString() {
 		// return "TERM(" + field + SEP + term + ")\n";
 		// TODO: add the boost value if non default.
+
 		// we need to escape the term for the sep
 		String escaped = term.replaceAll(SEP, "\\" + SEP);
-		if (escaped.contains(" ") || escaped.contains(",")) {
-			escaped = "\"" + escaped + "\"";
-		}
+
+    if ( (escaped.contains(" ") || escaped.contains(",")) && !escaped.startsWith("\"") && !escaped.endsWith("\"") ) {
+      escaped = escaped.replace("\"", "\\\"");
+      escaped = "\"" + escaped + "\"";
+    }
+
 		return "" + field + SEP + escaped + EOLN;
 	}
 

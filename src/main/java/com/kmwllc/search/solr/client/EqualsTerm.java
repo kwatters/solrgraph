@@ -24,10 +24,17 @@ public class EqualsTerm extends Term {
   public String toString() {
     // we need to escape the term for the sep
     String escaped = getTerm().replaceAll(SEP, "\\" + SEP);
-    if (escaped.contains(" ") || escaped.contains(",")) {
+
+    if ( (escaped.contains(" ") || escaped.contains(",")) && !escaped.startsWith("\"") && !escaped.endsWith("\"") ) {
+      escaped = escaped.replace("\"", "\\\"");
       escaped = "\"" + escaped + "\"";
     }
-    return "" + getField() + SEP + "EQUALS(" + escaped + "," + getBoost() + ")" + EOLN;
+
+    String boostTerm = "";
+    if (getBoost() >= 0) {
+      boostTerm = "," + getBoost();
+    }
+    return "" + getField() + SEP + "EQUALS(" + escaped + boostTerm + ")" + EOLN;
   }
 
   public static void main(String[] args){
