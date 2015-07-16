@@ -8,12 +8,8 @@ import java.util.ArrayList;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.PhraseQuery;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.TermQuery;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
@@ -82,6 +78,9 @@ public class QueryUtils {
 			// add all the terms first
 			for (Term t : e.getTerms()) {
 				if (t instanceof PhraseTerm) {
+          if ("*".equals(t.getField())){
+            t.setField(getAsteriskField(schema));
+          }
 					PhraseTerm pt = (PhraseTerm)t;
 					// TODO: what do i need to do here??
 					PhraseQuery pq = new PhraseQuery();
@@ -95,7 +94,18 @@ public class QueryUtils {
 					}
 					BooleanClause bc = new BooleanClause(pq, occ);
 					bq.add(bc);							
-				} else {
+				} else if ("*".equals(t.getField()) && "*".equals(t.getTerm())){
+          MatchAllDocsQuery allDocsQuery = new MatchAllDocsQuery();
+          //TODO:: does boosting a MatchAllDocsQuery even make sense?
+          if (t.getBoost() != -1) {
+            allDocsQuery.setBoost(t.getBoost());
+          }
+          BooleanClause bc = new BooleanClause(allDocsQuery, occ);
+          bq.add(bc);
+        } else {
+          if ("*".equals(t.getField())){
+            t.setField(getAsteriskField(schema));
+          }
 					ArrayList<String> tokens = tokenizeTerm(schema, t);
 					// this should only be a single token..
 					if (tokens.size() > 1) { 
@@ -128,6 +138,12 @@ public class QueryUtils {
 		}
 
 	}
+
+  private static String getAsteriskField(IndexSchema schema) {
+    //TODO:: getDefaultSearchFieldName is returning null. Hardcoding to "content" field for now.
+    //t.setField(schema.getDefaultSearchFieldName());
+    return "content";
+  }
 
 	private static ArrayList<String> tokenizeTerm(IndexSchema schema, Term t) {
 		ArrayList<String> tokens = new ArrayList<String>();
