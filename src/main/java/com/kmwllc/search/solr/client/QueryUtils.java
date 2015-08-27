@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.document.FieldType.NumericType;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.solr.request.SolrQueryRequest;
@@ -18,16 +19,17 @@ import org.apache.solr.search.SyntaxError;
 //import com.kmwllc.solr.graph.GraphQuery;
 //import com.kmwllc.solr.graph.distributed.DistributedGraphQuery;
 
+
 import com.kmwllc.search.graph.GraphQuery;
 
 public class QueryUtils {
 
 	public static Query toLuceneQuery(Expression e, SolrQueryRequest req) throws SyntaxError {
-		
+
 		// 
 		IndexSchema schema = req.getSchema();
 
-		
+
 		if (e == null) {
 			return null;
 		}
@@ -55,11 +57,11 @@ public class QueryUtils {
 			// TODO: handle this!
 			String qs = ((QueryStringExpression) e).getQueryString();
 			String queryParser = ((QueryStringExpression) e).getParser();
-			
+
 			QParser parser = QParser.getParser(qs, queryParser, req);
 			Query query = parser.getQuery();
 			return query;
-			
+
 		} else {
 			BooleanQuery bq = new BooleanQuery();
 			Operator op = e.getOp();
@@ -77,10 +79,57 @@ public class QueryUtils {
 
 			// add all the terms first
 			for (Term t : e.getTerms()) {
-				if (t instanceof PhraseTerm) {
-          if ("*".equals(t.getField())){
-            t.setField(getAsteriskField(schema));
-          }
+				if (t instanceof RangeTerm) {
+					 // TODO: Implement range term!
+					RangeTerm rt = (RangeTerm)t;
+					// if this is a numeric field?
+					FieldType fieldType = schema.getFieldType(t.getField());
+					// If the field is numeric 
+					if (fieldType.getNumericType() != null) {
+						// DOUBLE / FLOAT / INT / LONG
+						System.out.println("TYPE: " + fieldType.getNumericType());
+						boolean lowerInc = rt.isLowerInclusive();
+						boolean upperInc = rt.isUpperInclusive();
+						if (fieldType.getNumericType().equals(NumericType.DOUBLE)) {
+							Double lower = (rt.getLowerTerm() != null) ? Double.valueOf(rt.getLowerTerm()) : null;
+							Double upper = (rt.getUpperTerm() != null) ? Double.valueOf(rt.getUpperTerm()) : null ;
+							Query q = NumericRangeQuery.newDoubleRange(rt.getField(),lower, upper, lowerInc, upperInc);
+							BooleanClause bc = new BooleanClause(q, occ);
+							bq.add(bc);							
+						} else if (fieldType.getNumericType().equals(NumericType.FLOAT)) {
+							Float lower = (rt.getLowerTerm() != null) ? Float.valueOf(rt.getLowerTerm()) : null;
+							Float upper = (rt.getUpperTerm() != null) ? Float.valueOf(rt.getUpperTerm()) : null;
+							Query q = NumericRangeQuery.newFloatRange(rt.getField(),lower, upper, lowerInc, upperInc);
+							BooleanClause bc = new BooleanClause(q, occ);
+							bq.add(bc);							
+						} else if (fieldType.getNumericType().equals(NumericType.INT)) {
+							Integer lower = (rt.getLowerTerm() != null) ? Integer.valueOf(rt.getLowerTerm()) : null;
+							Integer upper = (rt.getUpperTerm() != null) ? Integer.valueOf(rt.getUpperTerm()) : null;
+							Query q = NumericRangeQuery.newIntRange(rt.getField(),lower, upper, lowerInc, upperInc);
+							BooleanClause bc = new BooleanClause(q, occ);
+							bq.add(bc);	
+						} else if (fieldType.getNumericType().equals(NumericType.LONG)) {
+							Long lower = (rt.getLowerTerm() != null) ? Long.valueOf(rt.getLowerTerm()) : null;
+							Long upper = (rt.getUpperTerm() != null) ? Long.valueOf(rt.getUpperTerm()) : null;
+							Query q = NumericRangeQuery.newLongRange(rt.getField(),lower, upper, lowerInc, upperInc);
+							BooleanClause bc = new BooleanClause(q, occ);
+							bq.add(bc);	
+						} else {
+							System.out.println("Unknown Numeric Type!");
+						}
+				
+					} else {
+						// this is not a numeric field?
+						System.out.print("What do to here");
+						// TODO: support non numeric types!
+					}
+
+					
+					
+				} else if (t instanceof PhraseTerm) {
+					if ("*".equals(t.getField())){
+						t.setField(getAsteriskField(schema));
+					}
 					PhraseTerm pt = (PhraseTerm)t;
 					// TODO: what do i need to do here??
 					PhraseQuery pq = new PhraseQuery();
@@ -95,17 +144,17 @@ public class QueryUtils {
 					BooleanClause bc = new BooleanClause(pq, occ);
 					bq.add(bc);							
 				} else if ("*".equals(t.getField()) && "*".equals(t.getTerm())){
-          MatchAllDocsQuery allDocsQuery = new MatchAllDocsQuery();
-          //TODO:: does boosting a MatchAllDocsQuery even make sense?
-          if (t.getBoost() != -1) {
-            allDocsQuery.setBoost(t.getBoost());
-          }
-          BooleanClause bc = new BooleanClause(allDocsQuery, occ);
-          bq.add(bc);
-        } else {
-          if ("*".equals(t.getField())){
-            t.setField(getAsteriskField(schema));
-          }
+					MatchAllDocsQuery allDocsQuery = new MatchAllDocsQuery();
+					//TODO:: does boosting a MatchAllDocsQuery even make sense?
+					if (t.getBoost() != -1) {
+						allDocsQuery.setBoost(t.getBoost());
+					}
+					BooleanClause bc = new BooleanClause(allDocsQuery, occ);
+					bq.add(bc);
+				} else {
+					if ("*".equals(t.getField())){
+						t.setField(getAsteriskField(schema));
+					}
 					ArrayList<String> tokens = tokenizeTerm(schema, t);
 					// this should only be a single token..
 					if (tokens.size() > 1) { 
@@ -139,24 +188,34 @@ public class QueryUtils {
 
 	}
 
-  private static String getAsteriskField(IndexSchema schema) {
-    //TODO:: getDefaultSearchFieldName is returning null. Hardcoding to "content" field for now.
-    //t.setField(schema.getDefaultSearchFieldName());
-    return "content";
-  }
+	private static String getAsteriskField(IndexSchema schema) {
+		//TODO:: getDefaultSearchFieldName is returning null. Hardcoding to "content" field for now.
+		//t.setField(schema.getDefaultSearchFieldName());
+		return "content";
+	}
 
 	private static ArrayList<String> tokenizeTerm(IndexSchema schema, Term t) {
 		ArrayList<String> tokens = new ArrayList<String>();
 		FieldType fieldType = schema.getFieldType(t.getField());
 		Analyzer fieldAnalyzer = fieldType.getQueryAnalyzer();
+
+		// If this field is a numeric type just return the value , don't bother tokenizing
+		if (fieldType.getNumericType() != null) {
+			// this is a string.. just return
+			ArrayList<String> numericTokens = new ArrayList<String>();
+			numericTokens.add(t.getTerm());
+			return numericTokens;
+		}
+
+
 		Reader r = new StringReader(t.getTerm());
-		
+
 		try {
 			TokenStream ts = fieldAnalyzer.tokenStream(t.getField(), r);
 			// OffsetAttribute offsetAttribute = ts.addAttribute(OffsetAttribute.class);
 			CharTermAttribute charTermAttribute = ts.addAttribute(CharTermAttribute.class);
 			ts.reset();
-			
+
 			while (ts.incrementToken()) {
 				// Gotta get the tokens from this token stream.
 				String token = charTermAttribute.toString();

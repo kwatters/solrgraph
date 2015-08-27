@@ -76,4 +76,20 @@ public class RangeTerm extends Term {
 
     return true;
   }
+
+public String getLowerTerm() {
+	return lowerTerm;
+}
+
+public String getUpperTerm() {
+	return upperTerm;
+}
+
+public boolean isLowerInclusive() {
+	return lowerInclusive;
+}
+
+public boolean isUpperInclusive() {
+	return upperInclusive;
+}
 }
