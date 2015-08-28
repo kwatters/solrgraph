@@ -25,10 +25,7 @@ import com.kmwllc.search.graph.GraphQuery;
 public class QueryUtils {
 
 	public static Query toLuceneQuery(Expression e, SolrQueryRequest req) throws SyntaxError {
-
-		// 
 		IndexSchema schema = req.getSchema();
-
 
 		if (e == null) {
 			return null;
@@ -124,8 +121,6 @@ public class QueryUtils {
 						// TODO: support non numeric types!
 					}
 
-					
-					
 				} else if (t instanceof PhraseTerm) {
 					if ("*".equals(t.getField())){
 						t.setField(getAsteriskField(schema));
@@ -181,7 +176,7 @@ public class QueryUtils {
 				}
 				// TODO: how to handle join + graph operators?
 				bq.add(QueryUtils.toLuceneQuery(subE, req), occ);
-			};
+			}
 
 			return bq;
 		}
@@ -206,7 +201,6 @@ public class QueryUtils {
 			numericTokens.add(t.getTerm());
 			return numericTokens;
 		}
-
 
 		Reader r = new StringReader(t.getTerm());
 
