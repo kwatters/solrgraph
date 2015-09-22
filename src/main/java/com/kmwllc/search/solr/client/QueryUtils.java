@@ -71,6 +71,7 @@ public class QueryUtils {
 				bq.setMinimumNumberShouldMatch(or.getMinShouldMatch());
 				occ = Occur.SHOULD;
 			} else if (op.equals(Operator.NOT)) {
+				bq.add(new MatchAllDocsQuery(), Occur.MUST);
 				occ = Occur.MUST_NOT;
 			}
 
@@ -155,11 +156,17 @@ public class QueryUtils {
 					if (tokens.size() > 1) { 
 						System.out.println("Warning term query generated more than 1 term, ignoring additional terms");						
 					}
-					TermQuery tq = new TermQuery(new org.apache.lucene.index.Term(t.getField(), tokens.get(0)));
-					if (t.getBoost() != -1) {
-						tq.setBoost(t.getBoost());
+					String token = tokens.get(0);
+					Query q;
+					if (token.contains("?") || token.contains("*")) {
+						q = new WildcardQuery(new org.apache.lucene.index.Term(t.getField(), token));
+					} else {
+						q = new TermQuery(new org.apache.lucene.index.Term(t.getField(), token));
 					}
-					BooleanClause bc = new BooleanClause(tq, occ);
+					if (t.getBoost() != -1) {
+						q.setBoost(t.getBoost());
+					}
+					BooleanClause bc = new BooleanClause(q, occ);
 					bq.add(bc);
 				}
 			}

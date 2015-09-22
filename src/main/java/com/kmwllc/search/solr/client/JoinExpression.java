@@ -8,7 +8,7 @@ public class JoinExpression extends GraphExpression {
 	private String foreignKey;
 	
 	public JoinExpression(Expression leftQuery, Expression rightQuery, String primaryKey, String foreignKey) {
-		super(leftQuery, primaryKey, foreignKey, 1, rightQuery,true, false);
+		super(leftQuery, primaryKey, foreignKey, 2, rightQuery, true, false);
 		this.leftQuery = leftQuery;
 		this.rightQuery = rightQuery;
 		this.primaryKey = primaryKey;
