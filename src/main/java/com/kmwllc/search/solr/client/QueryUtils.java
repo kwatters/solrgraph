@@ -78,50 +78,13 @@ public class QueryUtils {
 			// add all the terms first
 			for (Term t : e.getTerms()) {
 				if (t instanceof RangeTerm) {
-					 // TODO: Implement range term!
 					RangeTerm rt = (RangeTerm)t;
-					// if this is a numeric field?
 					FieldType fieldType = schema.getFieldType(t.getField());
-					// If the field is numeric 
-					if (fieldType.getNumericType() != null) {
-						// DOUBLE / FLOAT / INT / LONG
-						System.out.println("TYPE: " + fieldType.getNumericType());
-						boolean lowerInc = rt.isLowerInclusive();
-						boolean upperInc = rt.isUpperInclusive();
-						if (fieldType.getNumericType().equals(NumericType.DOUBLE)) {
-							Double lower = (rt.getLowerTerm() != null) ? Double.valueOf(rt.getLowerTerm()) : null;
-							Double upper = (rt.getUpperTerm() != null) ? Double.valueOf(rt.getUpperTerm()) : null ;
-							Query q = NumericRangeQuery.newDoubleRange(rt.getField(),lower, upper, lowerInc, upperInc);
-							BooleanClause bc = new BooleanClause(q, occ);
-							bq.add(bc);							
-						} else if (fieldType.getNumericType().equals(NumericType.FLOAT)) {
-							Float lower = (rt.getLowerTerm() != null) ? Float.valueOf(rt.getLowerTerm()) : null;
-							Float upper = (rt.getUpperTerm() != null) ? Float.valueOf(rt.getUpperTerm()) : null;
-							Query q = NumericRangeQuery.newFloatRange(rt.getField(),lower, upper, lowerInc, upperInc);
-							BooleanClause bc = new BooleanClause(q, occ);
-							bq.add(bc);							
-						} else if (fieldType.getNumericType().equals(NumericType.INT)) {
-							Integer lower = (rt.getLowerTerm() != null) ? Integer.valueOf(rt.getLowerTerm()) : null;
-							Integer upper = (rt.getUpperTerm() != null) ? Integer.valueOf(rt.getUpperTerm()) : null;
-							Query q = NumericRangeQuery.newIntRange(rt.getField(),lower, upper, lowerInc, upperInc);
-							BooleanClause bc = new BooleanClause(q, occ);
-							bq.add(bc);	
-						} else if (fieldType.getNumericType().equals(NumericType.LONG)) {
-							Long lower = (rt.getLowerTerm() != null) ? Long.valueOf(rt.getLowerTerm()) : null;
-							Long upper = (rt.getUpperTerm() != null) ? Long.valueOf(rt.getUpperTerm()) : null;
-							Query q = NumericRangeQuery.newLongRange(rt.getField(),lower, upper, lowerInc, upperInc);
-							BooleanClause bc = new BooleanClause(q, occ);
-							bq.add(bc);	
-						} else {
-							System.out.println("Unknown Numeric Type!");
-						}
-				
-					} else {
-						// this is not a numeric field?
-						System.out.print("What do to here");
-						// TODO: support non numeric types!
-					}
-
+					QParser parser = QParser.getParser(null, null, req);  // TODO: not sure what this should be
+					Query rq = fieldType.getRangeQuery(parser, schema.getField(t.getField()),
+						rt.getLowerTerm(), rt.getUpperTerm(), rt.isLowerInclusive(), rt.isUpperInclusive());
+					BooleanClause bc = new BooleanClause(rq, occ);
+					bq.add(bc);
 				} else if (t instanceof PhraseTerm) {
 					if ("*".equals(t.getField())){
 						t.setField(getAsteriskField(schema));
