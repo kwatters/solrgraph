@@ -23,7 +23,7 @@
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-core</artifactId>
-      <version>8.4.0</version>
+      <version>8.8.2</version>
       <exclusions>
         <!-- TODO: Hadoop annotations is puling this in for 1.6 .. why? -->
         <exclusion>
